@@ -1,0 +1,18 @@
+            characterized_history += f"\t{i+1}. " + question["question"] + ": ___ ("
+            characterized_history += " 前置条件: " + question['prerequisite'] + " ;"
+            characterized_history += " 期望回答: " + question['expected_answer'] + " ;"
+            characterized_history += " 作答格式: " + question['answer_format'] + " )"
+
+
+eg_file_tree = {
+    "file_tree": {
+        "current_handling_files": {
+            "data.csv": {},
+            "README.md": {},
+            "example_dir": {
+                "notes.txt": {},
+                "main.py": {}
+            }
+        }
+    }
+}

@@ -1,0 +1,188 @@
+.left-panel {
+    flex: 0 0 200px; /* Initial width */
+    background-color: #f8f9fa;
+
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #000000;
+}
+.udiv {
+    margin-left: 20px; /* 缩进 */
+}
+.dir_name_div, .file_name_div {
+    cursor: pointer;
+    display: flex;
+    width: fit-content;
+    align-items: left;
+    padding: 1px;
+    transition: transform 0.1s, background-color 0.2s;
+    position: relative; /* 为绝对定位的子元素做准备 */
+}
+
+.dir_name_div {
+    font-weight: bold;
+    border: 1px solid #FF0000;
+}
+
+.file_name_div {
+    border: 1px solid #0000FF;
+}
+
+/* Hover效果 */
+.dir_name_div:hover, .file_name_div:hover {
+    background-color: #e0e0e0;
+}
+
+/* 拖动时的幽灵元素样式 */
+.ghost {
+    position: absolute;
+    opacity: 0.8;
+    z-index: 1000;
+    pointer-events: none;
+    transform: rotate(3deg);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 可作为放置目标的样式 */
+.drop-target {
+    background-color: #a0c0ff;
+    transform: scale(1.02);
+}
+
+/* 原始元素被拖动时的样式 */
+.dragging-source {
+    opacity: 0.4;
+}
+.sub_files_div {
+    cursor: pointer; /* 鼠标指针 */
+    display: flex;
+    align-items: left;
+}
+.container_div {
+    padding-left: 20px; /* 左侧填充 */
+    border-left: 2px solid #ccc; /* 左侧边框 */
+    display: block; /* block or none */
+}
+.arrow {
+    margin-right: 1px; /* 箭头与文本之间的间距 */
+    border: 1px solid #ccc; /* 边框 */
+}
+.file-tree-container {
+    padding: 10px;
+    border: 2px solid #FFFFFF;
+    border-radius: 10px;
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #FFECA1;
+    background-color: #000000;
+}
+.file-operating-space {
+    padding: 10px;
+    border: 1px solid #FFFFFF;
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #D20103;
+    background-color: #000000;
+}
+.download-btn {
+    flex: 1;
+    margin: 5px;
+    background-color: #4CAF50; /* 绿色背景 */
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+.delete-btn {
+    flex: 1;
+    margin: 5px;
+    background-color: #f44336; /* 红色背景 */
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+.create-btn {
+    flex: 1;
+    margin: 5px;
+    background-color: #5DE2E7; /* 蓝色背景 */
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+.rename-btn {
+    flex: 1;
+    margin: 5px;
+    background-color: #FFDE59; /* 黄色背景 */
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+.download-btn:hover, .delete-btn, .create-btn, .rename-btn :hover {
+    opacity: 0.8; /* 悬停时透明度 */
+}
+
+.file-explorer-container {
+    padding: 10px;
+    border: 2px solid #FFFFFF;
+    border-radius: 10px;
+    margin: 10px 0;
+    min-height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #FFECA1;
+    background-color: #000000;
+    transition: all 0.2s ease;
+}
+
+.file-explorer-container.drag-over {
+    border: 2px dashed #FFECA1;
+    background-color: rgba(255, 236, 161, 0.1);
+}
+
+.file-explorer-nav {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #FFECA1;
+}
+
+.nav-back-btn {
+    background: none;
+    border: 1px solid #FFECA1;
+    color: #FFECA1;
+    padding: 2px 8px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.to_mother_dir-btn:hover {
+    background-color: rgba(255, 236, 161, 0.1);
+}
+.current-path {
+    color: #FFECA1;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.folder-enter-btn {
+    background: none;
+    border: 1px solid #FFECA1;
+    color: #FFECA1;
+    padding: 2px 8px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.folder-enter-btn:hover {
+    background-color: rgba(255, 236, 161, 0.1);
+}

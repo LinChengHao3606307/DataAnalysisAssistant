@@ -1,0 +1,56 @@
+
+{
+  "characters_map": [
+    ["老板",
+      "file_referred","request"],
+    ["我",
+      "_aim","_review","_is_end","final_result","plan","code","execution_result"]
+  ],
+  "task_description": "总结一下之前的情况和现在该做什么，你需要获取信息而执行的代码会被代码执行器执行",
+  "questions":{
+    "q1": {
+      "record_type": "aim",
+      "prerequisite": "无",
+      "question": "老板最初想要什么",
+      "expected_answer": "历史对话中老板最后的要求",
+      "answer_format": "str"
+    },
+    "q2": {
+      "record_type":"review",
+      "prerequisite": "正在继续上一步的计划，而非刚刚遇到新的请求",
+      "question": "我上一步做了什么",
+      "expected_answer": "简要说明我上一步为了实现老板最后的要求做了什么",
+      "answer_format": "str"
+    },
+    "q3": {
+      "record_type":"is_end",
+      "prerequisite": "无",
+      "question": "我是否已经完成了任务，知道了足够信息，这一步可以向老板汇报成果了",
+      "expected_answer": "是或否",
+      "answer_format": "bool"
+    },
+    "q4": {
+      "record_type": "final_result",
+      "prerequisite": "q3的答案是：已经完成了任务",
+      "question": "我的具体成果",
+      "expected_answer": "老板想要的具体答案的正面回答，如果老板是要求一个文件，说明你之前通过代码把文件存在哪里了",
+      "answer_format": "str"
+    },
+    "q5": {
+      "record_type":"plan",
+      "prerequisite": "q3的答案是：还未完成任务",
+      "question": "我这一步要做什么",
+      "expected_answer": "简要说明这一步要做什么",
+      "answer_format": "str"
+    },
+    "q6": {
+      "record_type":"code",
+      "prerequisite": "q3的答案是：还未完成任务，且需要通过代码推进工作",
+      "question": "这一步需要执行的代码",
+      "expected_answer": "python script，需以```包裹，每个```必须单占一行，代码中不准出现双引号，只能有单引号",
+      "answer_format": "str"
+    }
+  },
+  "remarks": "老板只要最后结果，不要汇报阶段性的成果，不要叫老板接下来还要做什么，比如: 接下来只需运行这段代码",
+  "examples": "老板最初想要什么: 老板想要data.csv的数据排列方式\n我上一步(如有)做了什么: 我上一部用代码打印了表头，可见，data.csv的一级索引是日期，按数字存储的，二级索引是股票编号，也是整数\n我是否已经完成了任务，知道了足够信息，这一步可以向老板汇报成果了: DONE_AND_REPORT\n具体成果:data.csv的一级索引是日期，按数字存储的，二级索引是股票编号，也是整数"
+}
