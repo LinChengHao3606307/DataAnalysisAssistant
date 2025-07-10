@@ -1,5 +1,126 @@
 # DataAnalysisAssistant - 数据分析助手
 
+## 🚀 快速开始
+
+### 环境要求
+- Python 3.8+
+- 现代浏览器（支持 WebSocket）
+- Conda 环境管理器
+
+### 启动步骤
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/LinChengHao3606307/DataAnalysisAssistant.git
+   ```
+
+2. **进入项目目录**
+   ```bash
+   cd DataAnalysisAssistant
+   ```
+
+3. **创建并激活 Conda 环境**
+   ```bash
+   conda env create -f environment.yml
+   conda activate dda
+   ```
+
+4. **启动服务器**
+   ```bash
+   # 使用默认配置启动
+   python main.py
+   
+   # 或使用自定义端口启动
+   python main.py --http-port 8080 --ws-port 8088
+   
+   # 查看所有可用选项
+   python main.py --help
+   ```
+
+5. **访问应用**
+   - 打开浏览器访问 `http://localhost:8102` (或自定义端口)
+   - WebSocket 服务器运行在 `ws://localhost:8108` (或自定义端口)
+
+### 功能特性
+- ✅ 文件拖拽上传
+- ✅ 文件树和浏览器双视图
+- ✅ 实时 AI 对话
+- ✅ 文件操作（移动、删除、重命名）
+- ✅ GPU 使用率监控
+- ✅ 多用户支持
+
+## ⚙️ 配置选项
+
+### 命令行参数
+启动服务器时可以使用以下命令行参数：
+
+```bash
+python main.py [选项]
+
+选项:
+  --http-port INT     HTTP服务器端口 (默认: 8102)
+  --ws-port INT      WebSocket服务器端口 (默认: 8108)
+  --host STR         服务器主机地址 (默认: 0.0.0.0)
+  --debug            启用调试模式
+  --ollama-url STR   Ollama API地址 (默认: http://127.0.0.1:11434/api/generate)
+  --main-model STR   主要模型名称 (默认: deepseek-r1:latest)
+  --assistant-model STR 助手模型名称 (默认: deepseek-r1:latest)
+  --assistant-retry INT 助手模型最大重试次数 (默认: 5)
+  -h, --help         显示帮助信息
+```
+
+**使用示例：**
+```bash
+# 使用自定义端口
+python main.py --http-port 8080 --ws-port 8088
+
+# 指定主机地址
+python main.py --host 127.0.0.1 --http-port 9000
+
+# 启用调试模式
+python main.py --debug
+
+# 使用自定义Ollama配置
+python main.py --ollama-url http://192.168.1.100:11434/api/generate --main-model llama2:7b
+
+# 使用不同的助手模型
+python main.py --assistant-model codellama:7b --assistant-retry 3
+
+# 完整配置示例
+python main.py --http-port 8080 --ws-port 8088 --ollama-url http://localhost:11434/api/generate --main-model deepseek-coder:6.7b --assistant-model llama2:7b --assistant-retry 5
+```
+
+### 配置文件修改
+可以通过修改 `others/const.py` 文件来更改默认配置：
+
+```python
+# 服务器端口配置
+WEBSOCKET_PORT = 8108  # WebSocket服务器端口
+TCP_PORT = 8102        # HTTP服务器端口
+
+# Ollama API配置
+OLLAMA_API_URL = "http://127.0.0.1:11434/api/generate"
+MODEL_NAMES = ["deepseek-r1:latest"]
+MAIN_MODEL = "deepseek-r1:latest"
+ASSISTANT_MODEL = "deepseek-r1:latest"
+
+# 路径配置
+OTHERS_ROOT_PATH = os.path.dirname(__file__)
+UPLOADED_FILES_ROOT_PATH = os.path.join(OTHERS_ROOT_PATH, "uploaded_files")
+USERS_ZONE_ROOT_PATH = os.path.join(OTHERS_ROOT_PATH, "users")
+```
+
+**主要配置项说明：**
+- `WEBSOCKET_PORT`: WebSocket服务器端口
+- `TCP_PORT`: HTTP服务器端口
+- `OLLAMA_API_URL`: Ollama API地址
+- `MODEL_NAMES`: 可用的模型列表
+- `MAIN_MODEL`: 主要使用的模型
+- `ASSISTANT_MODEL`: 助手模型
+- `UPLOADED_FILES_ROOT_PATH`: 上传文件存储路径
+- `USERS_ZONE_ROOT_PATH`: 用户工作区路径
+
+---
+
 ## 项目概述
 这是一个基于 WebSocket 的实时数据分析助手系统，提供文件管理和 AI 驱动的数据分析功能。
 
@@ -228,36 +349,7 @@ function setupEventDelegation() {
 - <h3>`const.py`</h3>
   - *项目默认值*
 
----
 
-## 🚀 快速开始
-
-### 环境要求
-- Python 3.8+
-- 现代浏览器（支持 WebSocket）
-
-### 启动步骤
-1. **安装依赖**
-   ```bash
-   pip install websockets
-   ```
-
-2. **启动服务器**
-   ```bash
-   python main.py
-   ```
-
-3. **访问应用**
-   - 打开浏览器访问 `http://localhost:8102`
-   - WebSocket 服务器运行在 `ws://localhost:8108`
-
-### 功能特性
-- ✅ 文件拖拽上传
-- ✅ 文件树和浏览器双视图
-- ✅ 实时 AI 对话
-- ✅ 文件操作（移动、删除、重命名）
-- ✅ GPU 使用率监控
-- ✅ 多用户支持
 
 ## 🔧 开发指南
 
