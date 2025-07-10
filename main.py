@@ -3,6 +3,7 @@ import os
 import re
 import asyncio
 import websockets
+import argparse
 from http.server import SimpleHTTPRequestHandler
 from socketserver import TCPServer
 import threading
@@ -17,6 +18,31 @@ from others.const import TCP_PORT, WEBSOCKET_PORT, USERS_ZONE_ROOT_PATH, CURRENT
     USER_ZONE_BASIC_CONFIG
 
 user_sessions = {}
+
+def parse_arguments():
+    """解析命令行参数"""
+    parser = argparse.ArgumentParser(description='DataAnalysisAssistant - 数据分析助手服务器')
+    parser.add_argument('--http-port', type=int, default=TCP_PORT,
+                       help=f'HTTP服务器端口 (默认: {TCP_PORT})')
+    parser.add_argument('--ws-port', type=int, default=WEBSOCKET_PORT,
+                       help=f'WebSocket服务器端口 (默认: {WEBSOCKET_PORT})')
+    parser.add_argument('--host', type=str, default='0.0.0.0',
+                       help='服务器主机地址 (默认: 0.0.0.0)')
+    parser.add_argument('--debug', action='store_true',
+                       help='启用调试模式')
+    
+    # Ollama相关配置
+    parser.add_argument('--ollama-url', type=str, default=None,
+                       help='Ollama API地址 (默认: http://127.0.0.1:11434/api/generate)')
+    parser.add_argument('--main-model', type=str, default=None,
+                       help='主要模型名称 (默认: deepseek-r1:latest)')
+    parser.add_argument('--assistant-model', type=str, default=None,
+                       help='助手模型名称 (默认: deepseek-r1:latest)')
+    parser.add_argument('--assistant-retry', type=int, default=None,
+                       help='助手模型最大重试次数 (默认: 5)')
+    
+    return parser.parse_args()
+
 
 def handle_user_work_zone_initiation(client_id):
     all_users_wz = os.listdir(USERS_ZONE_ROOT_PATH)
@@ -133,23 +159,50 @@ class MyHTTPRequestHandler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
 
-def start_http_server():
+def start_http_server(http_port):
     handler = MyHTTPRequestHandler
-    httpd = TCPServer(("", TCP_PORT), handler)
+    httpd = TCPServer(("", http_port), handler)
     httpd.serve_forever()
 
 
 async def main():
+    args = parse_arguments()
+    http_port = args.http_port
+    ws_port = args.ws_port
+    host = args.host
+    debug = args.debug
+
+    # 应用Ollama相关配置
+    if args.ollama_url:
+        import others.const
+        others.const.OLLAMA_API_URL = args.ollama_url
+        print(f"✅ 使用自定义Ollama API地址: {args.ollama_url}")
+    
+    if args.main_model:
+        import others.const
+        others.const.MAIN_MODEL = args.main_model
+        print(f"✅ 使用自定义主模型: {args.main_model}")
+    
+    if args.assistant_model:
+        import others.const
+        others.const.ASSISTANT_MODEL = args.assistant_model
+        print(f"✅ 使用自定义助手模型: {args.assistant_model}")
+    
+    if args.assistant_retry:
+        import others.const
+        others.const.ASSISTANT_MAX_RETRY = args.assistant_retry
+        print(f"✅ 设置助手模型最大重试次数: {args.assistant_retry}")
+
     # 启动HTTP服务器在一个单独的线程中
-    http_thread = threading.Thread(target=start_http_server)
+    http_thread = threading.Thread(target=start_http_server, args=(http_port,))
     http_thread.daemon = True
     http_thread.start()
 
     # 启动WebSocket服务器
-    async with websockets.serve(handle_websocket, "0.0.0.0", WEBSOCKET_PORT):
-        print(f"WebSocket服务器运行在 ws://localhost:{WEBSOCKET_PORT}")
+    async with websockets.serve(handle_websocket, host, ws_port):
+        print(f"WebSocket服务器运行在 ws://{host}:{ws_port}")
         print("="*20)
-        print(f"打开 http://localhost:{TCP_PORT} 访问网页")
+        print(f"打开 http://localhost:{http_port} 访问网页")
         print("="*20)
         
         # 显示GPU监测状态
