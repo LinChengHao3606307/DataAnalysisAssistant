@@ -1,5 +1,9 @@
 # DataAnalysisAssistant - 数据分析助手
 
+### 系统界面概览
+![系统界面](others/readme_assets/not_chatting.jpg)
+*系统启动后的主界面，左侧为文件管理区域，右侧为AI对话区域*
+
 ## 🚀 快速开始
 
 ### 环境要求
@@ -51,17 +55,13 @@
 - ✅ 多用户支持
 - ✅ 流式响应和子框系统
 
-## 🖼️ 功能展示
+## 🖼️ 对话展示
 
-### 系统界面概览
-![系统界面](others/readme_assets/not_chatting.jpg)
-*系统启动后的主界面，左侧为文件管理区域，右侧为AI对话区域*
-
-### 用户提问界面
+### 用户提问
 ![用户提问](others/readme_assets/question_asked.jpg)
 *用户向AI助手提问数据分析相关问题*
 
-### 问题解决过程
+### 解决问题
 ![问题解决](others/readme_assets/solving_problems.jpg)
 *AI助手分析问题、执行代码并展示结果的完整流程*
 
