@@ -1,0 +1,62 @@
+{
+    "signal_analysis_result/ic": [
+        {
+            "value": -0.002335211217485823
+        }
+    ],
+    "signal_analysis_result/ir": [
+        {
+            "value": -0.045905793961148036
+        }
+    ],
+    "signal_analysis_result/rank_ic": [
+        {
+            "value": -0.0015210376759844102
+        }
+    ],
+    "signal_analysis_result/rank_ir": [
+        {
+            "value": -0.0247382603278025
+        }
+    ],
+    "signal_analysis_result/max_WindowsAvgIc": [
+        {
+            "value": 0.03430475247795524
+        }
+    ],
+    "signal_analysis_result/max_WindowsAvgIr": [
+        {
+            "value": 0.692072790343752
+        }
+    ],
+    "signal_analysis_result/max_WindowsAvgRankIc": [
+        {
+            "value": 0.03512132449279071
+        }
+    ],
+    "signal_analysis_result/max_WindowsAvgRankIr": [
+        {
+            "value": 0.7515912790051564
+        }
+    ],
+    "signal_analysis_result/long_precision": [
+        {
+            "value": 0.47648452179162154
+        }
+    ],
+    "signal_analysis_result/short_precision": [
+        {
+            "value": 0.52505855288349
+        }
+    ],
+    "signal_analysis_result/long_short_return": [
+        {
+            "value": -0.0016820254968479276
+        }
+    ],
+    "signal_analysis_result/long_avg_return": [
+        {
+            "value": 0.0029466510750353336
+        }
+    ]
+}
