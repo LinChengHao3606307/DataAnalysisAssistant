@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DeepSeek Data Assistance</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+    </style>
+    <link rel="stylesheet" href="./styles/style_left.css?v=1.6">
+    <style>
+        .splitter {
+            width: 15px;
+            background-color: #b41818;
+            cursor: col-resize;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+        }
+    </style>
+    <link rel="stylesheet" href="./styles/style_right.css?v=1.7">
+    <link rel="stylesheet" href="./styles/wave_animation.css?v=1.8">
+</head>
+<body>
+    <div id="rename-hint" class="hint" style="display: none;">
+      请先选择要重命名的文件或文件夹
+    </div>
+    <div id="create-folder-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3>创建新文件夹</h3>
+        <input type="text" id="new-folder-name" placeholder="输入文件夹名称">
+        <div class="modal-buttons">
+          <button id="cancel-create-btn">取消</button>
+          <button id="confirm-create-btn">确认</button>
+        </div>
+      </div>
+    </div>
+    <div class="left-panel" id="left-panel">
+        <!-- Left panel content (currently empty) -->
+        <h3 style="color: #FFECA1;">File Explorer</h3>
+        <div id="file-explorer" class="file-explorer-container">
+            <div class="file-explorer-nav">
+                <button class="to_mother_dir-btn">&lt;</button>
+                <div class="current-path">expl/</div>
+            </div>
+            <div id="file-explorer-window" class="file-explorer-window"></div>
+        </div>
+        <div class="file-tree-container">
+            <div id="file tree root"></div>
+        </div>
+        <h3 style="color: #D20103;">Operating File</h3>
+        <div class="file-operating-space" style="border-bottom: 0px;">
+            <button id="download-btn" class="download-btn">Download</button>
+            <button id="delete-btn" class="delete-btn">Delete</button>
+        </div>
+        <div class="file-operating-space" style="border-top: 0px;">
+            <button id="create-btn" class="create-btn">New Folder</button>
+            <button id="rename-btn" class="rename-btn">Rename</button>
+        </div>
+        <div id="drop-zone"
+             style="border: 2px dashed #ccc; padding: 20px; text-align: center; color: #FFFFFF;">
+          拖放文件到此处 或 <u>点击选择</u>
+          <input type="file" id="file-input" style="display:none">
+        </div>
+    </div>
+    <div class="splitter" id="splitter"></div>
+    <div class="right-panel">
+        <!-- 背景层作为主要容器 -->
+        <div class="chat-background" id="chat-background">
+            <!-- 背景元素 -->
+            <div class="gpu-water-level" id="gpu-water-level">—— 0% ——</div>
+            <!-- 波浪动画容器 -->
+            <div class="wave-container">
+                <div class="wave wave-1"></div>
+                <div class="wave wave-2"></div>
+            </div>
+            
+            <!-- 聊天内容层 -->
+            <div class="chat-box" id="chat-box">
+            </div>
+        </div>
+        
+        <form id="chat-form">
+            <div class="input-container">
+                <textarea id="user-input" placeholder="Ask deepseek..." required></textarea>
+                <button id="submitUserInputBtn" type="submit">send</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 脚本加载 -->
+    <script src="./app/app_left.js?v=1.1"></script>
+    <script src="./app/app_right.js?v=1.1"></script>
+    <script src="./app/wave_controller.js?v=1.0"></script>
+
+    <!-- WebSocket全局管理（含左侧功能相关监听） -->
+    <script>
+        // 1. 获取或生成用户唯一标识
+        function getOrCreateUserId() {
+            // 尝试从 window.env 获取 RDP Session ID（需后端注入）
+            const rdpSessionId = window.env?.RDP_SESSION_ID || "unknown";
+
+            if (rdpSessionId !== "unknown") {
+                return rdpSessionId; // 使用 RDP Session ID
+            }
+
+            // 退回到 LocalStorage 的 UUID
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = crypto.randomUUID(); // 生成新的 UUID
+                localStorage.setItem('userId', userId); // 持久化存储
+            }
+            return userId;
+        }
+
+        // 2. 获取用户标识并连接 WebSocket
+        const userId = getOrCreateUserId();
+        const ws = new WebSocket(`ws://${window.location.hostname}:8108`);
+        window.ws = ws;
+        ws.onopen = () => {
+            ws.send(JSON.stringify({
+                type: "auth",
+                user_id: getOrCreateUserId()  // 你的生成 ID 函数
+            }));
+        };
+
+        const splitter = document.getElementById('splitter');
+        const leftPanel = document.getElementById('left-panel');
+        const mainUserInput = document.getElementById('user-input');
+        const mainSubmitUserInputBtn = document.getElementById('submitUserInputBtn');
+        let isDragging = false;
+
+        splitter.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        function onMouseMove(e) {
+            if (!isDragging) return;
+
+            const containerWidth = document.body.clientWidth;
+            const newLeftWidth = e.clientX;
+
+            // Set minimum and maximum widths
+            const minWidth = 100;
+            const maxWidth = containerWidth - 100;
+
+            if (newLeftWidth >= minWidth && newLeftWidth <= maxWidth) {
+                leftPanel.style.flex = `0 0 ${newLeftWidth}px`;
+                mainUserInput.style.height = 'auto'; // 先重置高度
+                mainUserInput.style.height = (mainUserInput.scrollHeight) + 'px'; // 设置新高度
+                mainSubmitUserInputBtn.style.height = 'auto';
+                mainSubmitUserInputBtn.style.height = (mainUserInput.scrollHeight) + 'px';
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            document.body.style.cursor = '';
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        // 统一消息路由
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            console.log("main_handler_reached ! ! !")
+            console.log(msg.type)
+            // 1. 文件操作消息 → 左侧处理
+            if (msg.type.startsWith('file-') || msg.type === 'gpu-usage' || msg.type === 'gpu-memory-usage') {
+                window.dispatchEvent(new CustomEvent('left-panel-event', { detail: msg }));
+            }
+            // 2. 聊天消息 → 右侧处理
+            else {
+                console.log("右侧处理")
+                window.dispatchEvent(new CustomEvent('chat-event', { detail: msg }));
+            }
+        };
+
+        // 错误处理
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            const chatBox = document.getElementById("chat-box");
+            if (chatBox) {
+                const errorMsg = document.createElement("div");
+                errorMsg.className = "message error";
+                errorMsg.textContent = "Connection error occurred. Please refresh the page.";
+                chatBox.appendChild(errorMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        };
+    </script>
+</body>
+</html>
