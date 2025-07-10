@@ -45,8 +45,11 @@
 - ✅ 文件树和浏览器双视图
 - ✅ 实时 AI 对话
 - ✅ 文件操作（移动、删除、重命名）
-- ✅ GPU 使用率监控
+- ✅ GPU 使用率监控（显存、温度、风扇、功率）
+- ✅ 波浪动画效果（根据GPU使用率动态调整）
+- ✅ 代码执行和结果显示
 - ✅ 多用户支持
+- ✅ 流式响应和子框系统
 
 ## ⚙️ 配置选项
 
@@ -122,7 +125,7 @@ USERS_ZONE_ROOT_PATH = os.path.join(OTHERS_ROOT_PATH, "users")
 ---
 
 ## 项目概述
-这是一个基于 WebSocket 的实时数据分析助手系统，提供文件管理和 AI 驱动的数据分析功能。
+这是一个基于 WebSocket 的实时数据分析助手系统，提供文件管理、AI 驱动的数据分析功能和 GPU 监控。系统采用双面板设计，左侧为文件管理区域，右侧为 AI 对话区域，支持实时波浪动画效果和 GPU 使用率可视化。
 
 ## 前后端交互设计原则
 
@@ -207,11 +210,14 @@ user_sessions[websocket] = {
 
 #### **2. 聊天模块**
 - **流式响应**: 支持实时流式文本输出
-- **子框系统**: 支持结构化信息展示（代码、原始文本、Markdown）
+- **子框系统**: 支持结构化信息展示（代码、原始文本、Markdown、思考过程）
 - **上下文管理**: 自动包含相关文件信息到对话上下文
+- **代码执行**: 支持 Python 代码的实时执行和结果显示
+- **工作流系统**: 基于对话历史的多轮交互分析流程
 
 #### **3. 实时监控**
-- **GPU 监控**: 实时显示 GPU 使用率
+- **GPU 监控**: 实时显示 GPU 使用率、显存使用率
+- **波浪动画**: 根据 GPU 使用率动态调整波浪动画速度和高度
 - **内存监控**: 监控 JavaScript 内存使用情况
 
 ### 🔧 技术实现细节
@@ -257,130 +263,81 @@ function setupEventDelegation() {
 
 ---
 
-# 项目结构
-***
-## 后端 `backend`
-- <h3>`chat`</h3>
-  - `workflows`
-    - *响应 <u>前端主要任务</u> 的主体与配件*
-    <br> </br>
-    - `action_executors`
-      - <u>(参数化)回答 -> 硬件执行 -> (optional)结果</u>
-      - *模型能调用的各种程序，如:* `code_executor.py`
-    <br> </br>
-    - `ask_llm.py`
-      - <u>完整场景问题 -> 主力/助理LLM -> 原始回答</u>
-      - *仅调用LLM回答问题，也是直接调用LLM的唯一函数，会与前端交互*
-      - *只固定支持 though，response，code 等常见块*
-    <br> </br>
-    - `hints`
-      - <u>需求 -> 长文本提示词</u>
-        - *存储不同任务侧重可能需要的提示，就是一个词典，包含*
-          - `__init__.py`:*Hint类，负责加载需要的json文件*
-          - *各种具体的`hint.json`*
-    <br> </br>
-    - `conversation_handlers`
-      - <u>历史(截至到问题提出) -> 视角变换 & 响应模式定义 -> 完整场景问题</u>
-      - <u>原始回答 -> 助理LLM -> JSON回答 -> (参数化)回答</u>
-      - *格式化回答的组件，包含：*
-        - `__init__.py`:*通用的Prompt类，负责：*
-          - *格式化提问*
-            - *runtime_input:history ->*
-            - *init_para:character_map + history -> mh(经过选择性屏蔽与角色带入的历史)*
-            - *mh + init_para:task_description -> mh*
-            - *mh + init_para:answer_format_dict -> full_prompt*
-            - *-> full_prompt*
-          - *解析回答*
-            - *runtime_input:latest_response ->*
-            - *init_para:answer_format_dict -> ask_llm -> JSON_ans*
-            - *JSON_ans + init_para:answer_format_dict -> parameterized_response*
-            - *parameterized_response ->*
-        - *各种具体的`prompt.json`*
-    <br> </br>
-    - `main_scripts`
-      - <u>历史(截至到问题提出) -> 分段行动 & 前端响应 -> 历史(截止到回答完成)</u>
-      - *包括main_workflow在内的，调用以上组件完成工作的程序，也可互相调用*
-    <br> </br>
-  - `chat_assist.py`
-    - <u>杂务 -> 分类处理 -> 回应</u>
-    - *响应前端杂事（如：清空历史，打断，新对话，管理历史...）*
-    <br> </br>
-  - `chat_uti.py`
-    - *工具包*
-    <br> </br>
-  - `__init__.py`
-    - <u>前端事件 -> 主要任务 & 杂物</u>
-      - <u>主要任务 + 用户历史 -> 历史(截至到问题提出) -> main_workflow.py -> 历史(截止到回答完成)</u>
-      - <u>杂务 -> chat_uti.py -> 回应</u>
-    - *处理全部发生在 chat_zone 的前端事件*
-    <br> </br>
-- <h3>`file`</h3>
-  - `uti.py`
-    - *文件请求处理工具*
-  <br> </br>
-  - `__init__.py`
-    - *处理全部发生在 file_zone 的前端事件*
-  <br> </br>
-- <h3>`__init__.py`</h3>
-  - *处理全部前端事件*
-***
-## 前端 `frontend`
-- <h3>`app`</h3>
-  - `app_left.js`
-    - *file_zone的全部前端逻辑*
-    <br> </br>
-  - `app_right.js`
-    - *chat_zone的全部前端逻辑*
-    <br> </br>
-- <h3>`styles`</h3>
-  - `style_left.css`
-    - *file_zone的样式*
-    <br> </br>
-  - `style_right.css`
-    - *chat_zone的样式*
-    <br> </br>
-- <h3>`page_layout.html`</h3>
-  - *整体页面*
-  <br> </br>
-***
-## 其他 `others`
-- <h3>`uploaded_files`</h3>
-  - *描用户上传的文件*
-- <h3>`const.py`</h3>
-  - *项目默认值*
+## 📁 项目结构
 
+### 后端 `backend/`
 
+#### `chat/` - 聊天功能模块
+- **`workflows/`** - 响应前端主要任务的主体与配件
+  - **`action_executors/`** - (参数化)回答 → 硬件执行 → (optional)结果
+    - 模型能调用的各种程序，如: `script_executor.py` (Python代码执行器)
+  - **`ask_llm.py`** - 完整场景问题 → 主力/助理LLM → 原始回答
+    - 仅调用LLM回答问题，也是直接调用LLM的唯一函数，会与前端交互
+    - 只固定支持 though，response，code 等常见块
+  - **`hints/`** - 需求 → 长文本提示词
+    - 存储不同任务侧重可能需要的提示，就是一个词典，包含:
+      - `__init__.py`: Hint类，负责加载需要的json文件
+      - 各种具体的 `hint.json` (如 `plot_graph_h1.json`)
+  - **`conversation_handlers/`** - 格式化回答的组件
+    - 历史(截至到问题提出) → 视角变换 & 响应模式定义 → 完整场景问题
+    - 原始回答 → 助理LLM → JSON回答 → (参数化)回答
+    - 包含:
+      - `__init__.py`: 通用的Prompt类，负责:
+        - **格式化提问**: runtime_input:history → init_para:character_map + history → mh(经过选择性屏蔽与角色带入的历史) → mh + init_para:task_description → mh + init_para:answer_format_dict → full_prompt
+        - **解析回答**: runtime_input:latest_response → init_para:answer_format_dict → ask_llm → JSON_ans → JSON_ans + init_para:answer_format_dict → parameterized_response
+      - 各种具体的 `prompt.json` (如 `da_conductor_p1.json`, `da_supervisor_p1.json`)
+  - **`main_scripts/`** - 主要工作流脚本
+    - 历史(截至到问题提出) → 分段行动 & 前端响应 → 历史(截止到回答完成)
+    - 包括`simple_workflow.py`在内的，调用以上组件完成工作的程序，也可互相调用
 
-## 🔧 开发指南
+  - **`chat_assist.py`** - 杂务 → 分类处理 → 回应
+  - 响应前端杂事（如：清空历史，打断，新对话，管理历史...）
+  - 当前为空文件，预留扩展接口
+- **`chat_uti.py`** - 工具包
+- **`__init__.py`** - 处理全部发生在 chat_zone 的前端事件
+  - 前端事件 → 主要任务 & 杂物
+  - 主要任务 + 用户历史 → 历史(截至到问题提出) → main_workflow.py → 历史(截止到回答完成)
+  - 杂务 → chat_uti.py → 回应
 
-### 添加新的消息类型
-1. **前端**: 在相应的事件处理器中添加新消息类型
-2. **后端**: 在消息路由中添加新的处理器
-3. **测试**: 确保前后端消息格式一致
+#### `file/` - 文件管理模块
+- **`file_uti.py`** - 文件请求处理工具
+- **`__init__.py`** - 处理全部发生在 file_zone 的前端事件
 
-### 扩展文件操作
-1. **后端**: 在 `backend/file/__init__.py` 中添加新的处理逻辑
-2. **前端**: 在 `frontend/app/app_left.js` 中添加相应的 UI 交互
-3. **更新**: 确保操作后调用 `update_display` 更新视图
+#### `gpu_monitor.py` - GPU监控模块
+- **GPU信息获取**: 使用pynvml库获取GPU显存、温度、风扇、功率信息
+- **实时监控**: 异步监控GPU状态并推送到前端
+- **多GPU支持**: 支持监控多个GPU设备
 
-### 自定义聊天功能
-1. **后端**: 在 `backend/chat/workflows/` 中添加新的工作流
-2. **前端**: 在 `frontend/app/app_right.js` 中添加新的消息类型处理
-3. **集成**: 确保与现有的流式响应系统兼容
+#### `__init__.py` - 主入口
+- 处理全部前端事件
 
-## 📝 注意事项
+### 前端 `frontend/`
 
-### 性能优化
-- 大文件传输使用分块上传
-- 使用事件委托避免重复绑定
-- 及时清理无用的 WebSocket 连接
+#### `app/` - 应用逻辑
+- **`app_left.js`** - file_zone的全部前端逻辑
+- **`app_right.js`** - chat_zone的全部前端逻辑
+- **`wave_controller.js`** - 波浪动画控制器，根据GPU使用率动态调整动画
 
-### 安全考虑
-- 用户数据隔离
-- 文件路径验证
-- 输入参数检查
+#### `styles/` - 样式文件
+- **`style_left.css`** - file_zone的样式
+- **`style_right.css`** - chat_zone的样式
+- **`wave_animation.css`** - 波浪动画样式
 
-### 错误处理
-- 统一的错误响应格式
-- 前端友好的错误提示
-- 连接断开自动重连
+#### `assets/` - 静态资源
+- **波浪图片**: 多种颜色的波浪动画素材
+
+#### `page_layout.html` - 整体页面
+
+### 其他 `others/`
+
+#### `uploaded_files/` - 用户上传文件存储
+- 存储用户上传的文件
+
+#### `users/` - 用户工作区
+- 每个用户的独立工作目录和会话数据
+
+#### `history/` - 历史记录
+- 系统历史数据存储
+
+#### `const.py` - 项目配置
+- 项目默认值和配置常量
